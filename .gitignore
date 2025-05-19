@@ -27,6 +27,7 @@ data/**
 
 # ignore file based logs
 *.log
+lightning_logs
 
 ##########################
 # Common files
