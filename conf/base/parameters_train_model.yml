@@ -1,0 +1,13 @@
+# This is a boilerplate parameters config generated for pipeline 'train_model'
+# using Kedro 0.19.12.
+#
+# Documentation for this file format can be found in "Parameters"
+# Link: https://docs.kedro.org/en/0.19.12/configuration/parameters.html
+callback_params:
+  es_patience: 3
+
+train_hparams:
+  accelerator: auto
+  batch_size: 64
+  learning_rate: 0.003
+  epochs: 5
