@@ -1,7 +1,5 @@
-"""
-This is a boilerplate pipeline 'train_model'
-generated using Kedro 0.19.12
-"""
+from lightning import Callback
+
 from src.skin_cancer_detection.nn_framework.trainer_module import TrainerModule
 from src.skin_cancer_detection.nn_framework.dataset import BatchedDataset
 
@@ -11,12 +9,15 @@ from lightning.pytorch.callbacks.early_stopping import EarlyStopping
 from lightning.pytorch.callbacks.model_checkpoint import ModelCheckpoint
 import lightning as L
 
-import os
-
 
 def prepare_data_loaders(params: dict):
-    train_dataset = BatchedDataset('train')
-    val_dataset = BatchedDataset('valid')
+    train_dataset = BatchedDataset(path=params['train_path'],
+                                   set_label='train',
+                                   dtype=params['dtype'])
+
+    val_dataset = BatchedDataset(path=params['val_path'],
+                                 set_label='valid',
+                                 dtype=params['dtype'])
 
     train_loader = DataLoader(train_dataset, batch_size=params['batch_size'], shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=params['batch_size'])
@@ -24,50 +25,40 @@ def prepare_data_loaders(params: dict):
     return train_loader, val_loader
 
 
-def prepare_callbacks(params: dict):
-    checkpoints_dir = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))),
-        'data',
-        '06_models',
-        'checkpoints'
-    )
-    checkpoint_callback = ModelCheckpoint(
-        monitor="val_loss",
-        mode="min",
-        dirpath=checkpoints_dir,
-        filename="best-model",
-        save_top_k=1
-    )
+def prepare_callbacks(params: list[dict[str, str | dict]]) -> list[Callback]:
+    callback_mapping = {
+        "ModelCheckpoint": ModelCheckpoint,
+        "EarlyStopping": EarlyStopping,
+    }
 
-    es = EarlyStopping(
-        monitor="val_loss",
-        mode="min",
-        patience=params["es_patience"],
-        verbose=True
-    )
+    callbacks = []
+    for callback_config in params:
+        name = callback_config["name"]
+        if name not in callback_mapping:
+            raise ValueError(f"Unknown callback name {name}")
 
-    return [es, checkpoint_callback]
+        callback_cls = callback_mapping[name]
+        callbacks.append(callback_cls(**callback_config["args"]))
+
+    return callbacks
 
 
 def train_model(model, train_dataloader, val_dataloader, callbacks, params: dict):
-    ckpt_callback: ModelCheckpoint = callbacks[1]
+    ckpt_callback = next((c for c in callbacks if isinstance(c, ModelCheckpoint)))
     module = TrainerModule(model, learning_rate=params['learning_rate'])
     trainer = L.Trainer(
         max_epochs=params['epochs'],
         callbacks=callbacks,
-        accelerator=params['accelerator']
+        accelerator=params['accelerator'],
+        precision=params['precision']
     )
     trainer.fit(module, train_dataloader, val_dataloader)
+    return ckpt_callback
+
+
+def load_trained_module(ckpt_callback: ModelCheckpoint):
+    # Zamienić to na load_pretrained_module, żeby to było przyjmowane przez train_model
+    # a później od razu trainer.fit(...)
+    # A zamiast tego node'a jakiś node w stylu: return trained module czy coś
     module = TrainerModule.load_from_checkpoint(checkpoint_path=ckpt_callback.best_model_path)
-    return module.model
-
-
-if __name__ == "__main__":
-    print(
-        os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))),
-            'data',
-            '06_models',
-            'checkpoints'
-        )
-    )
+    return module

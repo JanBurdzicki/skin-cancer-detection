@@ -1,7 +1,7 @@
-from src.skin_cancer_detection.nn_framework.model_components.spatial_compressor.conv_block_skip import ConvBlockSkip
-from src.skin_cancer_detection.nn_framework.model_components.spatial_compressor.conv_block_no_skip import \
+from skin_cancer_detection.nn_framework.model_components.spatial_compressor.conv_block_skip import ConvBlockSkip
+from skin_cancer_detection.nn_framework.model_components.spatial_compressor.conv_block_no_skip import \
     ConvBlockNoSkip
-from src.skin_cancer_detection.nn_framework.model_components.classifier.base_classifier import BaseClassifier
+from skin_cancer_detection.nn_framework.model_components.classifier.base_classifier import BaseClassifier
 import torch
 import torch.nn as nn
 from typing import Literal

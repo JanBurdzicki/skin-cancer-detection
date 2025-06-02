@@ -8,13 +8,14 @@ from src.skin_cancer_detection.pipelines.train_model.nodes import (
     prepare_callbacks,
     prepare_data_loaders,
     train_model,
+    load_trained_module
 )
 
 def create_pipeline(**kwargs) -> Pipeline:
     return pipeline([
         node(
             func=prepare_data_loaders,
-            inputs="params:train_hparams",
+            inputs="params:data_loaders_params",
             outputs=['train_loader', 'val_loader'],
             name='node_prepare_data_loaders'
         ),
@@ -27,7 +28,13 @@ def create_pipeline(**kwargs) -> Pipeline:
         node(
             func=train_model,
             inputs=['model', 'train_loader', 'val_loader', 'callbacks', 'params:train_hparams'],
-            outputs='trained_model',
+            outputs='ckpt_callback',
             name='node_train_model'
+        ),
+        node(
+            func=load_trained_module,
+            inputs=['ckpt_callback'],
+            outputs='trained_module',
+            name='node_load_trained_module'
         )
     ])

@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from src.skin_cancer_detection.nn_framework.model_components.spatial_compressor.conv_base_block import ConvBaseBlock
+from skin_cancer_detection.nn_framework.model_components.spatial_compressor.conv_base_block import ConvBaseBlock
 from collections import OrderedDict
 from typing import Literal
 

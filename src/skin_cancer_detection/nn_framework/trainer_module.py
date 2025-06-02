@@ -4,7 +4,8 @@ import torch
 
 
 class TrainerModule(L.LightningModule):
-    def __init__(self, model, learning_rate=1e-3):
+    # Module wrapper
+    def __init__(self, model: nn.Module, learning_rate=1e-3):
         super().__init__()
         self.model = model
         self.learning_rate = learning_rate

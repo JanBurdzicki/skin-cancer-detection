@@ -1,13 +1,22 @@
-# This is a boilerplate parameters config generated for pipeline 'train_model'
-# using Kedro 0.19.12.
-#
-# Documentation for this file format can be found in "Parameters"
-# Link: https://docs.kedro.org/en/0.19.12/configuration/parameters.html
 callback_params:
-  es_patience: 3
+  - name: EarlyStopping
+    args:
+      patience: 3
+  - name: ModelCheckpoint
+    args:
+      monitor: "val_loss"
+      mode: "min"
+      dirpath: "data/06_models/checkpoints"
+      filename: "best-model"
+      save_top_k: 1
 
 train_hparams:
   accelerator: auto
-  batch_size: 64
   learning_rate: 0.003
   epochs: 5
+  precision: "32"
+
+data_loaders_params:
+  train_path: None
+  val_path: None
+  batch_size: 64
