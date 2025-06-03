@@ -31,6 +31,7 @@ class TestKedroRun:
             assert params["train_hparams"]["epochs"] == 1
             logging.info(context.catalog)
 
+
 # każdy step na gh ma główne working directory, musi być ustawiony na nazwę tego repo
 # pip install -r requirements.txt
 # na gh musi być pip install -e .
