@@ -23,7 +23,6 @@ class TestKedroRun:
 
     def test_kedro_catalog(self):
         bootstrap_project(Path.cwd())
-
         with KedroSession.create(project_path=Path.cwd(), env="test") as session:
             context = session.load_context()
             catalog = context.catalog
