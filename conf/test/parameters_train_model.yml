@@ -1,0 +1,22 @@
+train_hparams:
+  learning_rate: 0.01
+  epochs: 1
+  accelerator: cpu
+  precision: 32
+
+data_loaders_params:
+  train_path: None
+  val_path: None
+  batch_size: 64
+
+callback_params:
+  - name: EarlyStopping
+    args:
+      monitor: val_loss
+      patience: 1
+  - name: ModelCheckpoint
+    args:
+      monitor: val_loss
+      mode: min
+      dirpath: data/06_models/test_checkpoints
+      save_top_k: 0

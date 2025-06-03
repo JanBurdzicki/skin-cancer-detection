@@ -40,9 +40,9 @@
 # https://docs.kedro.org/en/stable/data/data_catalog.html
 
 trained_module:
-  type: pickle.PickleDataSet
+  type: pickle.PickleDataset
   filepath: data/06_models/trained_module.pkl
 
 model:
-  type: pickle.PickleDataSet
+  type: pickle.PickleDataset
   filepath: data/06_models/model.pkl

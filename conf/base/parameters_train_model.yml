@@ -1,6 +1,7 @@
 callback_params:
   - name: EarlyStopping
     args:
+      monitor: "val_loss"
       patience: 3
   - name: ModelCheckpoint
     args:
