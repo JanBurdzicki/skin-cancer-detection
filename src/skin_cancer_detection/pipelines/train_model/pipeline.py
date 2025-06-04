@@ -28,12 +28,12 @@ def create_pipeline(**kwargs) -> Pipeline:
         node(
             func=train_model,
             inputs=['model', 'train_loader', 'val_loader', 'callbacks', 'params:train_hparams'],
-            outputs='ckpt_callback',
+            outputs='best_model_ckpt_path',
             name='node_train_model'
         ),
         node(
             func=load_trained_module,
-            inputs=['ckpt_callback'],
+            inputs=['best_model_ckpt_path'],
             outputs='trained_module',
             name='node_load_trained_module'
         )

@@ -71,6 +71,16 @@ class CnnDenseAssembly(nn.Module):
             )
         )
 
+    def get_config(self) -> dict:
+        return {
+            "block_configs": self.block_configs,
+            "block_types": self.block_types,
+            "classifier_config": self.classifier_config,
+            "classifier_type": self.classifier_type,
+            "input_width": self._in_w,
+            "input_height": self._in_h
+        }
+
     def _assure_correct_classifier_config(self):
         x = torch.randn((2, self.block_configs[0]['n_input_channels'], self._in_h, self._in_w),
                         dtype=self.classifier_config.get('dtype', None))
@@ -167,3 +177,7 @@ if __name__ == "__main__":
 
     output = assembly(sample)
     print(output.shape)
+
+    # get_config returns list of parameters that allow us to reinitialize new instance
+    assembly_cfg = assembly.get_config()
+    new_assembly = CnnDenseAssembly(**assembly_cfg)

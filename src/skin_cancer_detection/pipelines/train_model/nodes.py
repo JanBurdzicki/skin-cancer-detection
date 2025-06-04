@@ -53,12 +53,9 @@ def train_model(model, train_dataloader, val_dataloader, callbacks, params: dict
         precision=params['precision']
     )
     trainer.fit(module, train_dataloader, val_dataloader)
-    return ckpt_callback
+    return ckpt_callback.best_model_path
 
 
-def load_trained_module(ckpt_callback: ModelCheckpoint):
-    # Zamienić to na load_pretrained_module, żeby to było przyjmowane przez train_model
-    # a później od razu trainer.fit(...)
-    # A zamiast tego node'a jakiś node w stylu: return trained module czy coś
-    module = TrainerModule.load_from_checkpoint(checkpoint_path=ckpt_callback.best_model_path)
+def load_trained_module(best_model_ckpt_path: str):
+    module = TrainerModule.load_from_checkpoint(checkpoint_path=best_model_ckpt_path)
     return module
