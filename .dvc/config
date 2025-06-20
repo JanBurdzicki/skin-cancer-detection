@@ -1,5 +1,8 @@
 [core]
     analytics = false
-    remote = gdrive
+    remote = aws-s3
 ['remote "gdrive"']
     url = gdrive://1BhQLTFoAbEO75GgVCoNYPTHU_BLUcFjZ
+['remote "aws-s3"']
+    url = s3://dlp25-skin-cancer-detection/dvc-data
+    endpointurl = https://minio.pstack.org
