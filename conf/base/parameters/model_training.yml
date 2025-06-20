@@ -1,0 +1,5 @@
+# Parameters for the model training pipeline
+model_options:
+  epochs: 10
+  batch_size: 32
+  learning_rate: 0.001

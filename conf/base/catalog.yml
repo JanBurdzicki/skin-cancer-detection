@@ -39,58 +39,57 @@
 # (transcoding), templating and a way to reuse arguments that are frequently repeated. See more here:
 # https://docs.kedro.org/en/stable/data/data_catalog.html
 
-companies:
-  type: pandas.CSVDataset
-  filepath: data/01_raw/companies.csv
+# Data restructuring pipeline outputs
+restructuring_status:
+  type: json.JSONDataset
+  filepath: data/08_reporting/restructuring_status.json
 
-reviews:
-  type: pandas.CSVDataset
-  filepath: data/01_raw/reviews.csv
+conversion_status:
+  type: json.JSONDataset
+  filepath: data/08_reporting/conversion_status.json
 
-shuttles:
-  type: pandas.ExcelDataset
-  filepath: data/01_raw/shuttles.xlsx
-  load_args:
-    engine: openpyxl
+validation_results:
+  type: json.JSONDataset
+  filepath: data/08_reporting/validation_results.json
 
-preprocessed_companies:
-  type: pandas.ParquetDataset
-  filepath: data/02_intermediate/preprocessed_companies.parquet
+# CSV label fixing pipeline outputs
+csv_label_fixing_result:
+  type: json.JSONDataset
+  filepath: data/08_reporting/csv_label_fixing_result.json
 
-preprocessed_shuttles:
-  type: pandas.ParquetDataset
-  filepath: data/02_intermediate/preprocessed_shuttles.parquet
+# Data processing pipeline datasets
+processed_metadata:
+  type: json.JSONDataset
+  filepath: data/04_feature/processed_metadata.json
 
-model_input_table:
-  type: pandas.ParquetDataset
-  filepath: data/03_primary/model_input_table.parquet
+image_features:
+  type: json.JSONDataset
+  filepath: data/04_feature/image_features.json
 
-regressor:
+training_data:
+  type: json.JSONDataset
+  filepath: data/05_model_input/training_data.json
+
+# Model training pipeline datasets
+model:
   type: pickle.PickleDataset
-  filepath: data/06_models/regressor.pickle
+  filepath: data/06_models/model.pkl
   versioned: true
 
-shuttle_passenger_capacity_plot_exp:
-  type: plotly.PlotlyDataset
-  filepath: data/08_reporting/shuttle_passenger_capacity_plot_exp.json
-  versioned: true
-  plotly_args:
-    type: bar
-    fig:
-      x: shuttle_type
-      y: passenger_capacity
-      orientation: h
-    layout:
-      xaxis_title: Shuttles
-      yaxis_title: Average passenger capacity
-      title: Shuttle Passenger capacity
+# Model evaluation pipeline datasets
+metrics:
+  type: json.JSONDataset
+  filepath: data/08_reporting/metrics.json
 
-shuttle_passenger_capacity_plot_go:
-  type: plotly.JSONDataset
-  filepath: data/08_reporting/shuttle_passenger_capacity_plot_go.json
-  versioned: true
+# Additional datasets for flexibility
+processed_images:
+  type: pickle.PickleDataset
+  filepath: data/04_feature/processed_images.pkl
 
-dummy_confusion_matrix:
-  type: matplotlib.MatplotlibWriter
-  filepath: data/08_reporting/dummy_confusion_matrix.png
-  versioned: true
+test_images:
+  type: pickle.PickleDataset
+  filepath: data/05_model_input/test_images.pkl
+
+test_labels:
+  type: pickle.PickleDataset
+  filepath: data/05_model_input/test_labels.pkl
