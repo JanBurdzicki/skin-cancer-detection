@@ -157,3 +157,9 @@ venv.bak/
 
 # mlflow local runs
 mlruns/*
+
+# vscode
+.vscode/
+
+# TODO
+TODO/
