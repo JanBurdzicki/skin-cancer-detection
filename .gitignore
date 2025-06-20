@@ -165,3 +165,4 @@ mlruns/*
 TODO/
 
 scripts/test*
+src/skin_cancer_detection/pipelines/
