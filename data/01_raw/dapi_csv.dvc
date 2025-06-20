@@ -1,0 +1,6 @@
+outs:
+- md5: 6e28beebf6d2a3523c817e9a4a669617.dir
+  size: 3154924
+  nfiles: 288
+  hash: md5
+  path: dapi_csv

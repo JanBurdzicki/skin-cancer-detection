@@ -1,0 +1,6 @@
+outs:
+- md5: 49cc1075cf8a85ef6c74d8333f833cf7.dir
+  size: 3139353
+  nfiles: 288
+  hash: md5
+  path: gfp_csv
