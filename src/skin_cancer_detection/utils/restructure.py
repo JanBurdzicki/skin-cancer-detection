@@ -7,6 +7,7 @@ into a clean, deep-learning-ready layout.
 
 import csv
 import logging
+import re
 from pathlib import Path
 from typing import List, Dict, Optional
 
@@ -26,54 +27,54 @@ CHANNEL_MAP = {
 
 def extract_metadata(filename: str) -> Dict[str, str]:
     """
-    Extract metadata from a filename supporting two formats:
+    Extract metadata from a filename supporting multiple formats:
     1. "dapi_0001 - ID 0001_r01c01f02p03-ch01t01.tiff" (with ID)
     2. "r01c01f01p03-ch01t01.tiff" (without ID)
+    3. "dapi_r05c03f13p03-ch01t01.tiff.csv" (with prefix)
 
     Args:
         filename: Filename to parse
 
     Returns:
         Dictionary with keys: row_col, field, channel, cell_id (if present)
-        (pZZ, tTT are not useful and can be ignored)
 
     Example:
         >>> extract_metadata("dapi_0001 - ID 0001_r01c01f02p03-ch01t01.tiff")
         {'row_col': 'r01c01', 'field': 'f02', 'channel': 'ch01', 'cell_id': 'ID0001'}
         >>> extract_metadata("r01c01f01p03-ch01t01.tiff")
         {'row_col': 'r01c01', 'field': 'f01', 'channel': 'ch01', 'cell_id': None}
+        >>> extract_metadata("dapi_r05c03f13p03-ch01t01.tiff.csv")
+        {'row_col': 'r05c03', 'field': 'f13', 'channel': 'ch01', 'cell_id': None}
     """
     try:
         cell_id = None
 
-        # Check if this is format 1 (with ID)
-        if " - ID " in filename:
-            # Extract cell ID first
-            id_part = filename.split(" - ID ")[1]
-            cell_id = f"ID{id_part.split('_')[0].zfill(4)}"
+        # Pattern to extract cell ID if present (format: ID XXXX)
+        id_match = re.search(r' - ID (\d+)_', filename)
+        if id_match:
+            cell_id = f"ID{id_match.group(1).zfill(4)}"
 
-            # Get the part after the ID for further parsing
-            main_part = id_part.split('_', 1)[1]  # Everything after "ID XXXX_"
+        # Main pattern to extract row_col, field, and channel
+        # This pattern looks for: (optional prefix_)(r##c##)(f##)(p##)-(ch##)(t##)
+        main_pattern = r'(?:[a-z]+_)?(r\d{2}c\d{2})(f\d{2})p\d{2}-(ch\d{2})t\d{2}'
+        main_match = re.search(main_pattern, filename)
+
+        if main_match:
+            row_col = main_match.group(1)
+            field = main_match.group(2)
+            channel = main_match.group(3)
+
+            return {
+                "row_col": row_col,
+                "field": field,
+                "channel": channel,
+                "cell_id": cell_id
+            }
         else:
-            # Format 2 - no ID, use filename directly
-            main_part = filename
+            logger.warning(f"No valid pattern found in filename: {filename}")
+            return {"row_col": "", "field": "", "channel": "", "cell_id": None}
 
-        # Parse the main part: rXXcXXfYYpZZ-chNNtTT.tiff
-        parts = main_part.split("-")[0].split("f")
-        row_col = parts[0][:6]  # rXXcXX
-        field = f"f{parts[1][:2]}"  # fYY
-
-        # Extract channel part
-        ch_part = main_part.split("-")[-1]
-        channel = ch_part.split("t")[0]  # chNN
-
-        return {
-            "row_col": row_col,
-            "field": field,
-            "channel": channel,
-            "cell_id": cell_id
-        }
-    except (IndexError, ValueError) as e:
+    except Exception as e:
         logger.warning(f"Failed to extract metadata from filename {filename}: {e}")
         return {"row_col": "", "field": "", "channel": "", "cell_id": None}
 
