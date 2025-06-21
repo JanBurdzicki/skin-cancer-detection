@@ -9,7 +9,7 @@ import csv
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -42,6 +42,7 @@ def extract_cell_id_from_label(label: str) -> Optional[str]:
     match = re.search(r'ID (\d+)', label)
     if match:
         return f"ID{match.group(1).zfill(4)}"
+
     return None
 
 
@@ -102,19 +103,84 @@ def generate_proper_filename(sample_id: str, field: str, channel: str, cell_id: 
     return f"cell-{sample_id}-{field}-{channel}-{cell_id}.tiff"
 
 
-def fix_csv_labels_in_file(csv_path: Path, sample_id: str) -> int:
+def is_label_already_correct(label: str, sample_id: str) -> bool:
+    """
+    Check if a label is already in the correct format.
+
+    Args:
+        label: Label to check
+        sample_id: Expected sample ID (e.g., 'r05c03')
+
+    Returns:
+        True if label is already in correct format
+    """
+    # Check if label matches the pattern: cell-{sample_id}-{field}-{channel}-{cell_id}.tiff
+    pattern = rf'cell-{re.escape(sample_id)}-f\d+-ch\d+-ID\d{{4}}\.tiff'
+    return bool(re.match(pattern, label))
+
+
+def collect_invalid_pattern_from_csv(csv_path: Path, sample_id: str) -> Optional[str]:
+    """
+    Check if CSV file is empty or doesn't exist, and return the invalid pattern.
+
+    Args:
+        csv_path: Path to the CSV file
+        sample_id: Sample identifier (e.g., 'r01c01')
+
+    Returns:
+        Invalid pattern like 'r01c01-f06' if CSV is invalid, None otherwise
+    """
+    if not csv_path.exists():
+        # Extract pattern from filename: cell-r01c01-f06-ch01.csv -> r01c01-f06
+        stem = csv_path.stem  # cell-r01c01-f06-ch01
+        if stem.startswith('cell-'):
+            parts = stem.split('-')
+            if len(parts) >= 4:  # cell, r01c01, f06, ch01
+                return f"{parts[1]}-{parts[2]}"  # r01c01-f06
+        return None
+
+    try:
+        with open(csv_path, 'r', newline='') as f:
+            reader = csv.DictReader(f)
+            rows = list(reader)
+            if not rows:
+                # Extract pattern from filename: cell-r01c01-f06-ch01.csv -> r01c01-f06
+                stem = csv_path.stem  # cell-r01c01-f06-ch01
+                if stem.startswith('cell-'):
+                    parts = stem.split('-')
+                    if len(parts) >= 4:  # cell, r01c01, f06, ch01
+                        return f"{parts[1]}-{parts[2]}"  # r01c01-f06
+                return None
+    except Exception as e:
+        logger.error(f"Error reading CSV file {csv_path}: {e}")
+        # Extract pattern from filename as fallback
+        stem = csv_path.stem
+        if stem.startswith('cell-'):
+            parts = stem.split('-')
+            if len(parts) >= 4:
+                return f"{parts[1]}-{parts[2]}"
+        return None
+
+    return None
+
+
+def fix_csv_labels_in_file(csv_path: Path, sample_id: str, invalid_patterns: set) -> int:
     """
     Fix the Label column in a single CSV file.
 
     Args:
         csv_path: Path to the CSV file to fix
         sample_id: Sample identifier (e.g., 'r01c01')
+        invalid_patterns: Set to collect invalid patterns
 
     Returns:
         Number of labels fixed
     """
-    if not csv_path.exists():
-        logger.warning(f"CSV file does not exist: {csv_path}")
+    # Check if CSV is invalid and collect pattern
+    invalid_pattern = collect_invalid_pattern_from_csv(csv_path, sample_id)
+    if invalid_pattern:
+        logger.warning(f"Invalid CSV file detected: {csv_path}, pattern: {invalid_pattern}")
+        invalid_patterns.add(invalid_pattern)
         return 0
 
     try:
@@ -133,6 +199,11 @@ def fix_csv_labels_in_file(csv_path: Path, sample_id: str) -> int:
         for row in rows:
             if 'Label' in row:
                 old_label = row['Label']
+
+                # Skip if label is already in correct format
+                if is_label_already_correct(old_label, sample_id):
+                    logger.debug(f"Label already correct: {old_label}")
+                    continue
 
                 # Extract metadata from old label
                 meta = extract_metadata_from_label(old_label)
@@ -169,12 +240,13 @@ def fix_csv_labels_in_file(csv_path: Path, sample_id: str) -> int:
         return 0
 
 
-def fix_csv_labels_for_sample(sample_id: str) -> int:
+def fix_csv_labels_for_sample(sample_id: str, invalid_patterns: set) -> int:
     """
     Fix CSV labels for all channels in a sample.
 
     Args:
         sample_id: Sample identifier (e.g., 'r01c01')
+        invalid_patterns: Set to collect invalid patterns
 
     Returns:
         Total number of labels fixed
@@ -200,10 +272,34 @@ def fix_csv_labels_for_sample(sample_id: str) -> int:
             if csv_file.name.startswith('.'):  # Skip lock files
                 continue
 
-            fixed_count = fix_csv_labels_in_file(csv_file, sample_id)
+            fixed_count = fix_csv_labels_in_file(csv_file, sample_id, invalid_patterns)
             total_fixed += fixed_count
 
     return total_fixed
+
+
+def save_invalid_patterns(invalid_patterns: set, output_file: Path) -> None:
+    """
+    Save invalid patterns to a file for cleanup.
+
+    Args:
+        invalid_patterns: Set of invalid patterns like 'r01c01-f06'
+        output_file: Path to save the patterns
+    """
+    if not invalid_patterns:
+        logger.info("No invalid patterns found")
+        return
+
+    try:
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(output_file, 'w') as f:
+            for pattern in sorted(invalid_patterns):
+                f.write(f"{pattern}\n")
+
+        logger.info(f"Saved {len(invalid_patterns)} invalid patterns to {output_file}")
+
+    except Exception as e:
+        logger.error(f"Failed to save invalid patterns: {e}")
 
 
 def fix_all_csv_labels() -> None:
@@ -217,6 +313,7 @@ def fix_all_csv_labels() -> None:
 
     total_samples = 0
     total_labels_fixed = 0
+    invalid_patterns = set()
 
     # Process each sample directory
     for sample_dir in INTERMEDIATE_ROOT.glob("r*"):
@@ -227,7 +324,7 @@ def fix_all_csv_labels() -> None:
         logger.info(f"Fixing CSV labels for sample: {sample_id}")
 
         try:
-            labels_fixed = fix_csv_labels_for_sample(sample_id)
+            labels_fixed = fix_csv_labels_for_sample(sample_id, invalid_patterns)
             total_labels_fixed += labels_fixed
             total_samples += 1
 
@@ -235,7 +332,13 @@ def fix_all_csv_labels() -> None:
             logger.error(f"Failed to fix labels for sample {sample_id}: {e}")
             continue
 
+    # Save invalid patterns for cleanup
+    invalid_patterns_file = INTERMEDIATE_ROOT.parent / "invalid_patterns.txt"
+    save_invalid_patterns(invalid_patterns, invalid_patterns_file)
+
     logger.info(f"CSV label correction completed! Fixed {total_labels_fixed} labels across {total_samples} samples.")
+    if invalid_patterns:
+        logger.warning(f"Found {len(invalid_patterns)} invalid patterns. Check {invalid_patterns_file} for cleanup.")
 
 
 def main() -> None:
