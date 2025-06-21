@@ -165,4 +165,9 @@ mlruns/*
 TODO/
 
 scripts/test*
-src/skin_cancer_detection/pipelines/
+scripts/join_csv_data.py
+scripts/cleanup_invalid_data.py
+src/skin_cancer_detection/pipelines/model_training/
+src/skin_cancer_detection/pipelines/model_evaluation/
+src/skin_cancer_detection/pipelines/data_processing/
+src/skin_cancer_detection/pipelines/data_processing_backup/
