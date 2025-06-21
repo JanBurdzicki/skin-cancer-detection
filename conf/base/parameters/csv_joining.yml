@@ -1,0 +1,28 @@
+# CSV Joining Pipeline Parameters
+
+# GFP labeling parameters
+gfp_threshold: 25.0  # Threshold for positive/negative GFP classification
+
+# Processing options
+fix_labels: true  # Whether to run CSV label fixing before joining
+
+# Input/Output paths
+input_dir: "data/02_intermediate"
+output_dir: "data/02_intermediate"
+
+# Channel configuration
+channels:
+  - "dapi"
+  - "gfp"
+  - "mt"
+
+# Visualization settings
+visualization:
+  figure_size: [15, 10]
+  histogram_bins: 50
+  dpi: 300
+
+# File format settings
+output_formats:
+  csv: true
+  parquet: true
