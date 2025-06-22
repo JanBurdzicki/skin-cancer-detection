@@ -1,0 +1,5 @@
+outs:
+- md5: dca16327955ae30a806bf0e00b6713a8
+  size: 8629799
+  hash: md5
+  path: padding_resizing_metadata.json

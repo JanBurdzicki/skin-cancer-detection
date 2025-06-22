@@ -1,0 +1,5 @@
+outs:
+- md5: 803b0a405644ebc9995012f8480e42ee
+  size: 942
+  hash: md5
+  path: excluded_sample_roi_combinations.txt
