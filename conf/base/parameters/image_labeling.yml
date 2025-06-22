@@ -1,0 +1,8 @@
+# Image Labeling Pipeline Parameters
+
+# Directory paths
+labeling_input_dir: "data/03_primary"
+labeling_output_dir: "data/03_primary"  # Same as input for in-place processing
+
+# Labeling Parameters
+label_csv_path: "data/03_primary/combined_cell_data_clean.parquet"  # Path to parquet with sample_name, roi_name, gfp_status
