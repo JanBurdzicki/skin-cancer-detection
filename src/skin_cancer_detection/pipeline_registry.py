@@ -12,6 +12,8 @@ from skin_cancer_detection.pipelines import (
     data_filtering,
     image_padding_resizing,
     image_labeling,
+    image_augmentation,
+    tensor_conversion,
 )
 
 
@@ -29,6 +31,8 @@ def register_pipelines() -> dict[str, Pipeline]:
     data_filtering_pipeline = data_filtering.create_pipeline()
     image_padding_resizing_pipeline = image_padding_resizing.create_pipeline()
     image_labeling_pipeline = image_labeling.create_pipeline()
+    image_augmentation_pipeline = image_augmentation.create_pipeline()
+    tensor_conversion_pipeline = tensor_conversion.create_pipeline()
 
     return {
         "data_restructuring": data_restructuring_pipeline,
@@ -39,6 +43,8 @@ def register_pipelines() -> dict[str, Pipeline]:
         "data_filtering": data_filtering_pipeline,
         "image_padding_resizing": image_padding_resizing_pipeline,
         "image_labeling": image_labeling_pipeline,
+        "image_augmentation": image_augmentation_pipeline,
+        "tensor_conversion": tensor_conversion_pipeline,
         "__default__": data_restructuring_pipeline
         + csv_label_fixing_pipeline
         + csv_to_parquet_pipeline
@@ -47,4 +53,6 @@ def register_pipelines() -> dict[str, Pipeline]:
         + data_filtering_pipeline
         + image_padding_resizing_pipeline
         + image_labeling_pipeline
+        + image_augmentation_pipeline
+        + tensor_conversion_pipeline
     }
