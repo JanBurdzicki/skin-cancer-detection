@@ -249,6 +249,9 @@ dependencies = [
     "yarl==1.20.1",
     "zc-lockfile==3.0.post1",
     "zipp==3.23.0",
+    "torch>=2.7.1",
+    "torchvision>=0.22.1",
+    "albumentations>=2.0.8",
 ]
 
 [project.scripts]
