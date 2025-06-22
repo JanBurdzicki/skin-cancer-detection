@@ -1,0 +1,11 @@
+# Image Augmentation Pipeline Parameters
+
+# Directory paths - augmentation creates NEW images, so different output
+augmentation_input_dir: "data/03_primary"
+augmentation_output_dir: "data/04_feature"  # Different output for augmented images
+
+# Augmentation Parameters
+num_augmentations_per_image: 1
+simple_naming: true  # Use simple aug-id naming (true) or detailed parameter naming (false)
+save_original: true  # Save original image unchanged with aug-000 id (true/false)
+augmentation_seed: 42
