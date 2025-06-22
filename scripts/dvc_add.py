@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script to add all untracked data folders to DVC.
+Script to add all untracked data files and folders to DVC.
 
 Usage:
     python3 scripts/dvc_add.py [directory]
@@ -8,9 +8,10 @@ Usage:
     directory: Optional path to the directory to scan (default: data/01_raw)
 
 This script:
-- Recursively scans the specified directory for directories.
-- Skips folders that are already tracked by DVC (.dvc file exists).
-- Runs `dvc add <folder>` for each untracked directory.
+- Scans the specified directory for files and directories.
+- Skips items that are already tracked by DVC (.dvc file exists).
+- Skips hidden files and directories (starting with .).
+- Runs `dvc add <item>` for each untracked file or directory.
 - Uses subprocess with error handling.
 """
 
@@ -39,7 +40,7 @@ def parse_arguments():
         argparse.Namespace: Parsed arguments
     """
     parser = argparse.ArgumentParser(
-        description="Add untracked data folders to DVC",
+        description="Add untracked data files and folders to DVC",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -51,42 +52,44 @@ Examples:
         "directory",
         nargs="?",
         default=str(DEFAULT_DATA_DIR),
-        help=f"Directory to scan for untracked folders (default: {DEFAULT_DATA_DIR})"
+        help=f"Directory to scan for untracked files and folders (default: {DEFAULT_DATA_DIR})"
     )
     return parser.parse_args()
 
 
-def is_dvc_tracked(folder: Path) -> bool:
+def is_dvc_tracked(item: Path) -> bool:
     """
-    Check if a DVC tracking file (.dvc) exists for the given folder.
+    Check if a DVC tracking file (.dvc) exists for the given item.
 
     Args:
-        folder (Path): Path to a data subfolder.
+        item (Path): Path to a data file or folder.
 
     Returns:
         bool: True if a .dvc file exists, False otherwise.
     """
-    dvc_file = folder.with_suffix(".dvc")
+    dvc_file = item.with_suffix(".dvc")
     return dvc_file.exists()
 
 
-def dvc_add(folder: Path):
+def dvc_add(item: Path):
     """
-    Run `dvc add` on the specified folder.
+    Run `dvc add` on the specified file or folder.
 
     Args:
-        folder (Path): Folder to add to DVC.
+        item (Path): File or folder to add to DVC.
     """
-    logging.info(f"Adding to DVC: {folder}")
+    item_type = "directory" if item.is_dir() else "file"
+    logging.info(f"Adding {item_type} to DVC: {item}")
     try:
-        subprocess.run(["dvc", "add", str(folder)], check=True)
+        subprocess.run(["dvc", "add", str(item)], check=True)
+        logging.info(f"Successfully added {item} to DVC")
     except subprocess.CalledProcessError as e:
-        logging.error(f"Failed to add {folder} to DVC. Error: {e}")
+        logging.error(f"Failed to add {item} to DVC. Error: {e}")
 
 
 def main():
     """
-    Main function to scan and add untracked folders to DVC.
+    Main function to scan and add untracked files and folders to DVC.
     """
     setup_logging()
 
@@ -99,12 +102,18 @@ def main():
 
     logging.info(f"Scanning directory: {data_dir}")
 
+    # Process both files and directories
     for item in sorted(data_dir.iterdir()):
-        if item.is_dir():
-            if is_dvc_tracked(item):
-                logging.info(f"Already tracked by DVC, skipping: {item}")
-            else:
-                dvc_add(item)
+        # Skip hidden files and directories (starting with .)
+        if item.name.startswith('.'):
+            logging.debug(f"Skipping hidden item: {item}")
+            continue
+
+        if is_dvc_tracked(item):
+            item_type = "directory" if item.is_dir() else "file"
+            logging.info(f"Already tracked by DVC, skipping {item_type}: {item}")
+        else:
+            dvc_add(item)
 
 
 if __name__ == "__main__":
