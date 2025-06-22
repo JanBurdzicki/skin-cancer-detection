@@ -1,0 +1,10 @@
+# Image Padding and Resizing Pipeline Parameters
+
+# Directory paths - in-place operations
+padding_resizing_input_dir: "data/03_primary"
+padding_resizing_output_dir: "data/03_primary"  # Same as input for in-place processing
+
+# Padding and Resizing Parameters
+resize_for_model: "resnet18"  # Options: resnet18, resnet50, vgg16, inception, custom
+target_padding_size: null  # [width, height] or null for auto-calculation
+force_square: true  # If true, pad images to square dimensions to avoid deformation
