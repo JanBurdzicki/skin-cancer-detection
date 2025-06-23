@@ -170,10 +170,16 @@ scripts/cleanup_invalid_data.py
 scripts/fine_tuning
 scripts/validation
 
+COMPREHENSIVE_SYSTEM_OVERVIEW.md
+WANDB_INTEGRATION_SUMMARY.md
+checkpoints
+notebooks
 wandb/
 models/
 
 src/skin_cancer_detection/utils/README.md
+src/skin_cancer_detection/pipelines/ml_pipeline/README.md
+src/skin_cancer_detection/pipelines/ml_pipeline/nodes_backup.py
 
 scripts/training
 scripts/deployment
