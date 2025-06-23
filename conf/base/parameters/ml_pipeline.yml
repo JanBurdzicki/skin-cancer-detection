@@ -1,6 +1,62 @@
-# Simplified ML Pipeline Parameters Configuration
+# Comprehensive ML Pipeline Parameters Configuration
 
-# Tabular model parameters
+# ==========================================
+# COMPREHENSIVE TABULAR MODELS
+# ==========================================
+tabular_models:
+  target_column: "gfp_status"  # Actual target column name
+  exclude_columns: ["gfp_status", "sample_name", "roi_name"]
+
+  # Random Forest parameters
+  rf_n_estimators: 200
+  rf_max_depth: 15
+  rf_min_samples_split: 5
+  rf_min_samples_leaf: 2
+
+  # XGBoost parameters
+  xgb_n_estimators: 200
+  xgb_max_depth: 8
+  xgb_learning_rate: 0.1
+  xgb_subsample: 0.8
+  xgb_colsample_bytree: 0.8
+
+  # LightGBM parameters
+  lgb_n_estimators: 200
+  lgb_max_depth: 8
+  lgb_learning_rate: 0.1
+  lgb_subsample: 0.8
+  lgb_colsample_bytree: 0.8
+
+# ==========================================
+# COMPREHENSIVE IMAGE MODELS
+# ==========================================
+image_models:
+  num_classes: 2
+  batch_size: 32
+  max_epochs: 2  # For testing purposes
+  learning_rate: 0.001
+  image_size: [224, 224]
+  pos_weight: 11.27  # For class imbalance
+
+# ==========================================
+# COMPREHENSIVE XAI CONFIGURATION
+# ==========================================
+xai:
+  n_samples: 10  # Number of test samples to explain
+  save_visualizations: true
+  methods:
+    - vanilla_saliency
+    - guided_backprop
+    - deeplift
+    - integrated_gradients
+    - smoothgrad
+    - gradcam
+
+# ==========================================
+# LEGACY CONFIGURATIONS (BACKWARD COMPATIBILITY)
+# ==========================================
+
+# Tabular model parameters (legacy)
 tabular_model:
   target_column: "gfp_status"
   model_type: "xgboost"
@@ -31,7 +87,7 @@ tabular_model:
       class_weight: "balanced"  # Handle class imbalance
       random_state: 42
 
-# Image model parameters
+# Image model parameters (legacy)
 image_model:
   model_type: "resnet18"
   models:
@@ -61,7 +117,7 @@ image_model:
 # Hyperparameter optimization parameters
 optimization:
   framework: 'optuna'
-  n_trials: 20  # Reduced for faster testing
+  n_trials: 3  # Reduced for faster testing
   direction: 'maximize'
   metric: 'f1_score'
   target_column: "gfp_status"
@@ -75,14 +131,6 @@ model_comparison:
     - 'recall'
     - 'f1_score'
     - 'roc_auc'
-
-# XAI (Explainable AI) parameters
-xai:
-  explanation_sample_size: 10
-  tabular_methods:
-    - 'feature_importance'
-  image_methods:
-    - 'gradcam'
 
 # Deployment parameters
 deployment:

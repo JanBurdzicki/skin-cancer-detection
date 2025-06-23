@@ -79,6 +79,44 @@ image_test_data:
   filename_suffix: ".tiff"
 
 # ==========================================
+# COMPREHENSIVE ML PIPELINE OUTPUTS
+# ==========================================
+
+# All trained models (comprehensive)
+all_tabular_trained_models:
+  type: kedro.io.MemoryDataset
+
+all_tabular_optimized_models:
+  type: kedro.io.MemoryDataset
+
+all_image_trained_models:
+  type: kedro.io.MemoryDataset
+
+all_image_optimized_models:
+  type: kedro.io.MemoryDataset
+
+# Best models extracted from comprehensive training
+best_tabular_model:
+  type: kedro.io.MemoryDataset
+
+best_image_model:
+  type: kedro.io.MemoryDataset
+
+# Comprehensive XAI explanations
+comprehensive_image_explanations:
+  type: kedro_datasets.pickle.PickleDataset
+  filepath: data/08_reporting/comprehensive_image_explanations.pkl
+
+# Model comparisons
+tabular_models_comparison:
+  type: kedro_datasets.json.JSONDataset
+  filepath: data/08_reporting/tabular_models_comparison.json
+
+image_models_comparison:
+  type: kedro_datasets.json.JSONDataset
+  filepath: data/08_reporting/image_models_comparison.json
+
+# ==========================================
 # ML PIPELINE INTERMEDIATE OUTPUTS
 # ==========================================
 

@@ -267,14 +267,14 @@ class CNNClassifier(pl.LightningModule):
         all_preds = torch.cat([x['preds'] for x in outputs])
         all_targets = torch.cat([x['targets'] for x in outputs])
 
-        # Convert to numpy for sklearn metrics
+        # Convert to numpy for sklearn metrics (fix BFloat16 issue)
         if self.config.num_classes == 2:
-            preds_np = all_preds.cpu().numpy().flatten()
-            targets_np = all_targets.cpu().numpy().flatten()
+            preds_np = all_preds.float().cpu().numpy().flatten()
+            targets_np = all_targets.float().cpu().numpy().flatten()
             binary_preds_np = (preds_np > 0.5).astype(int)
         else:
-            preds_np = all_preds.cpu().numpy()
-            targets_np = all_targets.cpu().numpy()
+            preds_np = all_preds.float().cpu().numpy()
+            targets_np = all_targets.float().cpu().numpy()
             binary_preds_np = np.argmax(preds_np, axis=1)
 
         # Calculate comprehensive metrics
@@ -520,14 +520,14 @@ class ResNet18Classifier(pl.LightningModule):
         all_preds = torch.cat([x['preds'] for x in outputs])
         all_targets = torch.cat([x['targets'] for x in outputs])
 
-        # Convert to numpy for sklearn metrics
+        # Convert to numpy for sklearn metrics (fix BFloat16 issue)
         if self.config.num_classes == 2:
-            preds_np = all_preds.cpu().numpy().flatten()
-            targets_np = all_targets.cpu().numpy().flatten()
+            preds_np = all_preds.float().cpu().numpy().flatten()
+            targets_np = all_targets.float().cpu().numpy().flatten()
             binary_preds_np = (preds_np > 0.5).astype(int)
         else:
-            preds_np = all_preds.cpu().numpy()
-            targets_np = all_targets.cpu().numpy()
+            preds_np = all_preds.float().cpu().numpy()
+            targets_np = all_targets.float().cpu().numpy()
             binary_preds_np = np.argmax(preds_np, axis=1)
 
         # Calculate comprehensive metrics
@@ -635,8 +635,8 @@ class ImageModelTrainer:
             log_model=True
         )
 
-        # Log configuration
-        self.wandb_logger.experiment.config.update(self.config.__dict__)
+        # Log configuration - allow value changes to prevent conflicts during hyperparameter optimization
+        self.wandb_logger.experiment.config.update(self.config.__dict__, allow_val_change=True)
 
     def get_model(self, pretrained: bool = True) -> pl.LightningModule:
         """Get the appropriate model based on configuration."""
@@ -711,7 +711,7 @@ class ImageModelTrainer:
             accelerator="auto",
             devices="auto",
             strategy="auto",
-            precision=16,  # Mixed precision training
+            precision=32,  # Use float32 to avoid BFloat16 issues on CPU
             gradient_clip_val=1.0,
             log_every_n_steps=10
         )

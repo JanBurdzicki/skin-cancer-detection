@@ -38,8 +38,20 @@ def register_pipelines() -> dict[str, Pipeline]:
     feature_extraction_pipeline = feature_extraction.create_pipeline()
     data_splitting_pipeline = data_splitting.create_pipeline()
 
-    # Comprehensive ML pipeline with training, optimization, validation, and XAI
-    comprehensive_ml_pipeline = ml_pipeline.create_ml_pipeline()
+    # ML Pipelines
+    # Comprehensive ML pipeline with ALL models (RF, XGBoost, LGBM, CNN, ResNet) and ALL XAI methods
+    comprehensive_ml_pipeline = ml_pipeline.create_comprehensive_ml_pipeline()
+
+    # Legacy ML pipeline (single model training)
+    legacy_ml_pipeline = ml_pipeline.create_ml_pipeline()
+
+    # Individual ML sub-pipelines
+    tabular_training_pipeline = ml_pipeline.create_comprehensive_tabular_training_pipeline()
+    image_training_pipeline = ml_pipeline.create_comprehensive_image_training_pipeline()
+    evaluation_pipeline = ml_pipeline.create_comprehensive_evaluation_pipeline()
+    xai_pipeline = ml_pipeline.create_comprehensive_xai_pipeline()
+    comparison_pipeline = ml_pipeline.create_model_comparison_pipeline()
+    deployment_pipeline = ml_pipeline.create_deployment_pipeline()
 
     return {
         # Individual component pipelines
@@ -55,11 +67,23 @@ def register_pipelines() -> dict[str, Pipeline]:
         "feature_extraction": feature_extraction_pipeline,
         "data_splitting": data_splitting_pipeline,
 
-        # Comprehensive ML pipeline (default)
+        # Comprehensive ML pipeline (default) - Trains ALL models with ALL XAI methods
         "__default__": comprehensive_ml_pipeline,
-        "ml_pipeline": comprehensive_ml_pipeline,
+        "comprehensive_ml": comprehensive_ml_pipeline,
+        "ml_pipeline": comprehensive_ml_pipeline,  # Main pipeline alias
 
-        # Legacy data processing pipeline
+        # Legacy ML pipeline (single model training)
+        "legacy_ml": legacy_ml_pipeline,
+
+        # Individual ML sub-pipelines for granular execution
+        "tabular_training": tabular_training_pipeline,    # Trains RF, XGBoost, LGBM
+        "image_training": image_training_pipeline,        # Trains CNN, ResNet
+        "model_evaluation": evaluation_pipeline,          # Evaluates all models
+        "xai_explanations": xai_pipeline,                # Generates ALL XAI methods
+        "model_comparison": comparison_pipeline,          # Compares model performance
+        "model_deployment": deployment_pipeline,          # Prepares for deployment
+
+        # Complete data processing pipeline
         "data_processing": data_restructuring_pipeline
         + csv_label_fixing_pipeline
         + csv_to_parquet_pipeline
@@ -70,5 +94,19 @@ def register_pipelines() -> dict[str, Pipeline]:
         + image_labeling_pipeline
         + image_augmentation_pipeline
         + feature_extraction_pipeline
+        + data_splitting_pipeline,
+
+        # Full end-to-end pipeline (data processing + comprehensive ML)
+        "full_pipeline": data_restructuring_pipeline
+        + csv_label_fixing_pipeline
+        + csv_to_parquet_pipeline
+        + data_cleanup_pipeline
+        + csv_joining_pipeline
+        + data_filtering_pipeline
+        + image_padding_resizing_pipeline
+        + image_labeling_pipeline
+        + image_augmentation_pipeline
+        + feature_extraction_pipeline
         + data_splitting_pipeline
+        + comprehensive_ml_pipeline
     }
