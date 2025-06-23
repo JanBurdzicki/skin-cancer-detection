@@ -6,7 +6,7 @@ methods specifically for image classification models.
 """
 
 from abc import ABC, abstractmethod
-from typing import Union, Optional, Tuple, Dict, Any
+from typing import Union, Optional, Tuple, Dict, Any, List
 import numpy as np
 import torch
 import torch.nn as nn
@@ -16,11 +16,10 @@ from captum.attr import (
     Saliency,
     GuidedBackprop,
     DeepLift,
-    GradCam,
-    GuidedGradCam,
     IntegratedGradients,
     NoiseTunnel
 )
+from captum.attr import LayerGradCam, GuidedGradCam
 import cv2
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -172,7 +171,7 @@ class GradCAMExplainer(ImageExplainerBase):
         """
         super().__init__(model, device)
         self.layer_name = layer_name
-        self.grad_cam = GradCam(self.model, self._get_layer_by_name(layer_name))
+        self.grad_cam = LayerGradCam(self.model, self._get_layer_by_name(layer_name))
         self.guided_grad_cam = GuidedGradCam(self.model, self._get_layer_by_name(layer_name))
 
     def _get_layer_by_name(self, layer_name: str):
@@ -344,6 +343,97 @@ class IntegratedGradientsExplainer(ImageExplainerBase):
         )
 
         return self.postprocess_attribution(attribution)
+
+
+class ImageExplainer:
+    """
+    Comprehensive image explainer that combines multiple explanation methods.
+    """
+
+    def __init__(self, model: nn.Module, device: torch.device = None):
+        """
+        Initialize comprehensive image explainer.
+
+        Args:
+            model: Trained model to explain
+            device: Device to run computations on
+        """
+        self.model = model
+        self.device = device or torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.explainers = {}
+
+        # Initialize available explainers
+        self.explainers['saliency'] = VanillaSaliency(model, device)
+        self.explainers['guided_backprop'] = GuidedBackpropagation(model, device)
+        self.explainers['deeplift'] = DeepLIFTExplainer(model, device)
+        self.explainers['integrated_gradients'] = IntegratedGradientsExplainer(model, device)
+        self.explainers['smoothgrad'] = SmoothGradExplainer(model, device)
+
+    def add_gradcam_explainer(self, layer_name: str):
+        """Add Grad-CAM explainer for a specific layer."""
+        try:
+            self.explainers['gradcam'] = GradCAMExplainer(self.model, layer_name, self.device)
+            self.explainers['gradcam_plus'] = GradCAMPlusPlus(self.model, layer_name, self.device)
+        except Exception as e:
+            logger.warning(f"Could not initialize Grad-CAM explainers: {e}")
+
+    def explain(self, input_tensor: torch.Tensor, target_class: Optional[int] = None,
+                methods: Optional[List[str]] = None) -> Dict[str, np.ndarray]:
+        """
+        Generate explanations using multiple methods.
+
+        Args:
+            input_tensor: Input image tensor
+            target_class: Target class for explanation
+            methods: List of methods to use (default: all available)
+
+        Returns:
+            Dictionary of attribution maps from different methods
+        """
+        if methods is None:
+            methods = list(self.explainers.keys())
+
+        explanations = {}
+
+        for method in methods:
+            if method not in self.explainers:
+                logger.warning(f"Method {method} not available")
+                continue
+
+            try:
+                attribution = self.explainers[method].explain(input_tensor, target_class)
+                explanations[method] = attribution
+            except Exception as e:
+                logger.error(f"Error explaining with {method}: {e}")
+
+        return explanations
+
+    def visualize_explanations(self, input_tensor: torch.Tensor, target_class: Optional[int] = None,
+                              methods: Optional[List[str]] = None, save_dir: Optional[str] = None) -> Dict[str, plt.Figure]:
+        """Generate and save explanation visualizations."""
+        explanations = self.explain(input_tensor, target_class, methods)
+        figures = {}
+
+        # Convert tensor to numpy for visualization
+        if isinstance(input_tensor, torch.Tensor):
+            if input_tensor.dim() == 4:
+                input_image = input_tensor.squeeze(0).detach().cpu().numpy()
+            else:
+                input_image = input_tensor.detach().cpu().numpy()
+        else:
+            input_image = input_tensor
+
+        for method, attribution in explanations.items():
+            try:
+                fig = visualize_attribution(
+                    input_image, attribution, method,
+                    save_path=f"{save_dir}/{method}_explanation.png" if save_dir else None
+                )
+                figures[method] = fig
+            except Exception as e:
+                logger.error(f"Error visualizing {method}: {e}")
+
+        return figures
 
 
 def visualize_attribution(image: np.ndarray, attribution: np.ndarray,

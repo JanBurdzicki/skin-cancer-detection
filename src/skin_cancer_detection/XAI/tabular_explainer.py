@@ -585,6 +585,104 @@ class TreeInterpreterExplainer(TabularExplainerBase):
         return plt.gcf()
 
 
+class TabularExplainer:
+    """
+    Comprehensive tabular explainer that combines multiple explanation methods.
+    """
+
+    def __init__(self, model: BaseEstimator, X_train: np.ndarray,
+                 feature_names: Optional[List[str]] = None):
+        """
+        Initialize comprehensive tabular explainer.
+
+        Args:
+            model: Trained model to explain
+            X_train: Training data for background distribution
+            feature_names: Names of features
+        """
+        self.model = model
+        self.X_train = X_train
+        self.feature_names = feature_names
+        self.explainers = {}
+
+        # Initialize available explainers
+        if SHAP_AVAILABLE:
+            try:
+                self.explainers['shap'] = SHAPExplainer(model, X_train, feature_names)
+            except Exception as e:
+                logger.warning(f"Could not initialize SHAP explainer: {e}")
+
+        if LIME_AVAILABLE:
+            try:
+                self.explainers['lime'] = LIMEExplainer(model, X_train, feature_names)
+            except Exception as e:
+                logger.warning(f"Could not initialize LIME explainer: {e}")
+
+        self.explainers['permutation'] = PermutationImportanceExplainer(model, feature_names)
+
+        # Add feature importance if available
+        if hasattr(model, 'feature_importances_'):
+            self.explainers['feature_importance'] = FeatureImportanceExplainer(model, feature_names)
+
+    def explain(self, X: np.ndarray, y: Optional[np.ndarray] = None,
+                methods: Optional[List[str]] = None) -> Dict[str, Any]:
+        """
+        Generate explanations using multiple methods.
+
+        Args:
+            X: Input data to explain
+            y: Target values (required for some methods)
+            methods: List of methods to use (default: all available)
+
+        Returns:
+            Dictionary of explanations from different methods
+        """
+        if methods is None:
+            methods = list(self.explainers.keys())
+
+        explanations = {}
+
+        for method in methods:
+            if method not in self.explainers:
+                logger.warning(f"Method {method} not available")
+                continue
+
+            try:
+                if method == 'permutation' and y is not None:
+                    explanations[method] = self.explainers[method].explain(X, y)
+                elif method in ['shap', 'lime', 'feature_importance']:
+                    explanations[method] = self.explainers[method].explain(X)
+                else:
+                    logger.warning(f"Could not explain with method {method}")
+            except Exception as e:
+                logger.error(f"Error explaining with {method}: {e}")
+
+        return explanations
+
+    def plot_explanations(self, X: np.ndarray, y: Optional[np.ndarray] = None,
+                         save_dir: Optional[str] = None) -> Dict[str, plt.Figure]:
+        """Generate and save explanation plots."""
+        figures = {}
+
+        if 'shap' in self.explainers:
+            try:
+                fig = self.explainers['shap'].plot_summary(X,
+                    save_path=f"{save_dir}/shap_summary.png" if save_dir else None)
+                figures['shap'] = fig
+            except Exception as e:
+                logger.error(f"Error plotting SHAP: {e}")
+
+        if 'permutation' in self.explainers and y is not None:
+            try:
+                fig = self.explainers['permutation'].plot_importance(X, y,
+                    save_path=f"{save_dir}/permutation_importance.png" if save_dir else None)
+                figures['permutation'] = fig
+            except Exception as e:
+                logger.error(f"Error plotting permutation importance: {e}")
+
+        return figures
+
+
 def create_explanation_report(explainers: List[TabularExplainerBase],
                             X: np.ndarray, y: Optional[np.ndarray] = None,
                             save_dir: Optional[str] = None) -> Dict[str, Any]:
