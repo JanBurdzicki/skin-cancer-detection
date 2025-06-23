@@ -14,6 +14,7 @@ from skin_cancer_detection.pipelines import (
     image_labeling,
     image_augmentation,
     feature_extraction,
+    data_splitting,
 )
 
 
@@ -33,6 +34,7 @@ def register_pipelines() -> dict[str, Pipeline]:
     image_labeling_pipeline = image_labeling.create_pipeline()
     image_augmentation_pipeline = image_augmentation.create_pipeline()
     feature_extraction_pipeline = feature_extraction.create_pipeline()
+    data_splitting_pipeline = data_splitting.create_pipeline()
 
     return {
         "data_restructuring": data_restructuring_pipeline,
@@ -45,6 +47,7 @@ def register_pipelines() -> dict[str, Pipeline]:
         "image_labeling": image_labeling_pipeline,
         "image_augmentation": image_augmentation_pipeline,
         "feature_extraction": feature_extraction_pipeline,
+        "data_splitting": data_splitting_pipeline,
         "__default__": data_restructuring_pipeline
         + csv_label_fixing_pipeline
         + csv_to_parquet_pipeline
@@ -55,4 +58,5 @@ def register_pipelines() -> dict[str, Pipeline]:
         + image_labeling_pipeline
         + image_augmentation_pipeline
         + feature_extraction_pipeline
+        + data_splitting_pipeline
     }
