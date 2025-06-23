@@ -178,7 +178,6 @@ src/skin_cancer_detection/pipelines/tensor_conversion
 conf/base/parameters/tensor_conversion.yml
 
 src/skin_cancer_detection/XAI
-src/skin_cancer_detection/api
 src/skin_cancer_detection/app
 src/skin_cancer_detection/models
 scripts/training
