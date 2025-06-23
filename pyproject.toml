@@ -267,6 +267,7 @@ dependencies = [
     "mlflow>=1.27.0",
     "protobuf>=3.19.0,<5.0.0",
     "pytorch-lightning>=2.5.2",
+    "python-multipart>=0.0.20",
 ]
 
 [project.scripts]
