@@ -1,0 +1,97 @@
+# Simplified ML Pipeline Parameters Configuration
+
+# Tabular model parameters
+tabular_model:
+  target_column: "gfp_status"
+  model_type: "xgboost"
+  models:
+    xgboost:
+      n_estimators: 100
+      max_depth: 6
+      learning_rate: 0.1
+      subsample: 0.8
+      colsample_bytree: 0.8
+      scale_pos_weight: 11.27  # Handle class imbalance (neg/pos ratio)
+      random_state: 42
+
+    lightgbm:
+      n_estimators: 100
+      max_depth: 6
+      learning_rate: 0.1
+      subsample: 0.8
+      colsample_bytree: 0.8
+      scale_pos_weight: 11.27  # Handle class imbalance
+      random_state: 42
+
+    random_forest:
+      n_estimators: 100
+      max_depth: 10
+      min_samples_split: 5
+      min_samples_leaf: 2
+      class_weight: "balanced"  # Handle class imbalance
+      random_state: 42
+
+# Image model parameters
+image_model:
+  model_type: "resnet18"
+  models:
+    resnet18:
+      pretrained: true
+      num_classes: 2
+      learning_rate: 0.001
+      batch_size: 32
+      epochs: 10
+      pos_weight: 11.27  # Handle class imbalance
+      use_class_weights: true
+      loss_function: "focal"  # Better for imbalanced data
+      focal_alpha: 0.25
+      focal_gamma: 2.0
+
+    cnn:
+      num_classes: 2
+      learning_rate: 0.001
+      batch_size: 32
+      epochs: 10
+      pos_weight: 11.27  # Handle class imbalance
+      use_class_weights: true
+      loss_function: "focal"  # Better for imbalanced data
+      focal_alpha: 0.25
+      focal_gamma: 2.0
+
+# Hyperparameter optimization parameters
+optimization:
+  framework: 'optuna'
+  n_trials: 20  # Reduced for faster testing
+  direction: 'maximize'
+  metric: 'f1_score'
+  target_column: "gfp_status"
+  model_type: "xgboost"
+
+# Model comparison parameters
+model_comparison:
+  metrics:
+    - 'accuracy'
+    - 'precision'
+    - 'recall'
+    - 'f1_score'
+    - 'roc_auc'
+
+# XAI (Explainable AI) parameters
+xai:
+  explanation_sample_size: 10
+  tabular_methods:
+    - 'feature_importance'
+  image_methods:
+    - 'gradcam'
+
+# Deployment parameters
+deployment:
+  model_format: 'pickle'
+  include_preprocessing: false  # No preprocessing needed
+  versioning: true
+
+# Artifacts parameters
+artifacts:
+  save_models: true
+  save_metrics: true
+  save_explanations: true

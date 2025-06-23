@@ -39,57 +39,178 @@
 # (transcoding), templating and a way to reuse arguments that are frequently repeated. See more here:
 # https://docs.kedro.org/en/stable/data/data_catalog.html
 
+# ==========================================
+# ML PIPELINE DATA SOURCES (SIMPLIFIED)
+# ==========================================
+
+# Direct access to split tabular data
+tabular_train_data:
+  type: kedro_datasets.pandas.ParquetDataset
+  filepath: data/05_model_input/tabular/train.parquet
+
+tabular_val_data:
+  type: kedro_datasets.pandas.ParquetDataset
+  filepath: data/05_model_input/tabular/val.parquet
+
+tabular_test_data:
+  type: kedro_datasets.pandas.ParquetDataset
+  filepath: data/05_model_input/tabular/test.parquet
+
+# Direct access to split image data
+image_train_data:
+  type: kedro_datasets.partitions.PartitionedDataset
+  path: data/05_model_input/images/train
+  dataset:
+    type: kedro_datasets.pillow.ImageDataset
+  filename_suffix: ".tiff"
+
+image_val_data:
+  type: kedro_datasets.partitions.PartitionedDataset
+  path: data/05_model_input/images/val
+  dataset:
+    type: kedro_datasets.pillow.ImageDataset
+  filename_suffix: ".tiff"
+
+image_test_data:
+  type: kedro_datasets.partitions.PartitionedDataset
+  path: data/05_model_input/images/test
+  dataset:
+    type: kedro_datasets.pillow.ImageDataset
+  filename_suffix: ".tiff"
+
+# ==========================================
+# ML PIPELINE INTERMEDIATE OUTPUTS
+# ==========================================
+
+# Trained models (intermediate)
+tabular_trained_model:
+  type: kedro.io.MemoryDataset
+
+image_trained_model:
+  type: kedro.io.MemoryDataset
+
+# Optimization results
+tabular_optimized_params:
+  type: kedro.io.MemoryDataset
+
+image_optimized_params:
+  type: kedro.io.MemoryDataset
+
+# Optimized models
+tabular_optimized_model:
+  type: kedro.io.MemoryDataset
+
+image_optimized_model:
+  type: kedro.io.MemoryDataset
+
+# Evaluation results
+tabular_evaluation_results:
+  type: kedro.io.MemoryDataset
+
+image_evaluation_results:
+  type: kedro.io.MemoryDataset
+
+# Model comparison and deployment
+model_comparison_results:
+  type: kedro_datasets.json.JSONDataset
+  filepath: data/08_reporting/model_comparison_results.json
+
+deployment_ready_model:
+  type: kedro.io.MemoryDataset
+
+model_artifacts:
+  type: kedro_datasets.pickle.PickleDataset
+  filepath: data/06_models/model_artifacts.pkl
+
+# ==========================================
+# XAI EXPLANATIONS
+# ==========================================
+
+tabular_explanations:
+  type: kedro_datasets.pickle.PickleDataset
+  filepath: data/08_reporting/tabular_explanations.pkl
+
+image_explanations:
+  type: kedro_datasets.pickle.PickleDataset
+  filepath: data/08_reporting/image_explanations.pkl
+
+# ==========================================
+# FINAL MODEL OUTPUTS
+# ==========================================
+
+# Model evaluation metrics
+tabular_model_metrics:
+  type: kedro_datasets.json.JSONDataset
+  filepath: data/08_reporting/tabular_model_metrics.json
+
+image_model_metrics:
+  type: kedro_datasets.json.JSONDataset
+  filepath: data/08_reporting/image_model_metrics.json
+
+# Cross-validation results
+tabular_cv_results:
+  type: kedro_datasets.json.JSONDataset
+  filepath: data/08_reporting/tabular_cv_results.json
+
+image_cv_results:
+  type: kedro_datasets.json.JSONDataset
+  filepath: data/08_reporting/image_cv_results.json
+
+# ==========================================
+# LEGACY PIPELINE DATA (EXISTING)
+# ==========================================
+
 # Data restructuring pipeline outputs
 restructuring_status:
-  type: json.JSONDataset
+  type: kedro_datasets.json.JSONDataset
   filepath: data/08_reporting/restructuring_status.json
 
 conversion_status:
-  type: json.JSONDataset
+  type: kedro_datasets.json.JSONDataset
   filepath: data/08_reporting/conversion_status.json
 
 validation_results:
-  type: json.JSONDataset
+  type: kedro_datasets.json.JSONDataset
   filepath: data/08_reporting/validation_results.json
 
 # CSV label fixing pipeline outputs
 csv_label_fixing_result:
-  type: json.JSONDataset
+  type: kedro_datasets.json.JSONDataset
   filepath: data/08_reporting/csv_label_fixing_result.json
 
 # Data processing pipeline datasets
 processed_metadata:
-  type: json.JSONDataset
+  type: kedro_datasets.json.JSONDataset
   filepath: data/04_feature/processed_metadata.json
 
 image_features:
-  type: json.JSONDataset
+  type: kedro_datasets.json.JSONDataset
   filepath: data/04_feature/image_features.json
 
 training_data:
-  type: json.JSONDataset
+  type: kedro_datasets.json.JSONDataset
   filepath: data/05_model_input/training_data.json
 
 # Model training pipeline datasets
 model:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataset
   filepath: data/06_models/model.pkl
   versioned: true
 
 # Model evaluation pipeline datasets
 metrics:
-  type: json.JSONDataset
+  type: kedro_datasets.json.JSONDataset
   filepath: data/08_reporting/metrics.json
 
 # Additional datasets for flexibility
 processed_images:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataset
   filepath: data/04_feature/processed_images.pkl
 
 test_images:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataset
   filepath: data/05_model_input/test_images.pkl
 
 test_labels:
-  type: pickle.PickleDataset
+  type: kedro_datasets.pickle.PickleDataset
   filepath: data/05_model_input/test_labels.pkl

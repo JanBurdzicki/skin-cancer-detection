@@ -26,3 +26,23 @@ data_splitting:
 
   # Image filtering (only process ch03 images)
   channel_filter: "ch03"  # Only process images with this channel identifier in filename
+
+# Data splitting parameters for ML pipeline
+
+# Target column name in the dataset
+target_column: "gfp_status"
+
+# Test set size (proportion of total data)
+test_size: 0.2
+
+# Validation set size (proportion of remaining data after test split)
+val_size: 0.1
+
+# Random state for reproducible splits
+random_state: 42
+
+# Stratification settings
+stratify: true
+
+# Additional splitting parameters
+shuffle: true
