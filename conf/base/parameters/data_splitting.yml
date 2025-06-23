@@ -1,0 +1,28 @@
+# Data Splitting Pipeline Parameters
+# Processes images with ch03 channel in filename from patches/mt directories
+# Saves tabular data in tabular/ subdirectory and images in images/ subdirectory
+# Always copies images and saves as parquet format
+# Always includes sample_name and roi_name for cell identification
+
+# Input/Output paths
+data_splitting_feature_path: "data/04_feature/feature_data.parquet"
+data_splitting_image_dir: "data/04_feature"
+data_splitting_output_dir: "data/05_model_input"
+
+# Data splitting configuration
+data_splitting:
+  # Split sizes (must sum to <= 1.0)
+  test_size: 0.2    # 20% for testing
+  val_size: 0.2     # 20% for validation
+  # train_size is calculated as: 1.0 - test_size - val_size = 0.6 (60%)
+
+  # Random seed for reproducibility
+  random_state: 42
+
+  # Column names
+  label_column: "gfp_status"    # Target variable
+  sample_column: "sample_name"  # Sample identifier (always included)
+  roi_column: "roi_name"        # ROI identifier (always included)
+
+  # Image filtering (only process ch03 images)
+  channel_filter: "ch03"  # Only process images with this channel identifier in filename
