@@ -173,16 +173,9 @@ src/skin_cancer_detection/pipelines/data_processing/
 src/skin_cancer_detection/pipelines/data_processing_backup/
 src/skin_cancer_detection/utils/README.md
 
-<<<<<<< HEAD
-src/skin_cancer_detection/utils/tensor_conversion.py
-src/skin_cancer_detection/pipelines/tensor_conversion
-conf/base/parameters/tensor_conversion.yml
-
-=======
 src/skin_cancer_detection/XAI
 src/skin_cancer_detection/api
 src/skin_cancer_detection/app
->>>>>>> data_init
 src/skin_cancer_detection/models
 scripts/training
 scripts/deployment
