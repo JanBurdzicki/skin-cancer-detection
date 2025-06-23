@@ -1,0 +1,37 @@
+# Feature Extraction Pipeline Parameters
+
+# Input/Output paths
+feature_extraction_input_path: "data/03_primary/combined_cell_data_clean.parquet"
+feature_extraction_output_path: "data/04_feature/feature_data.parquet"
+
+# Feature extraction configuration
+feature_extraction:
+  # Metadata columns to keep (identifiers)
+  metadata_columns:
+    - "sample_name"
+    - "roi_name"
+
+  # Feature column prefix to extract (all columns starting with this)
+  feature_prefix: "mt_"
+
+  # Label column to keep
+  label_column: "gfp_status"
+
+  # Validation settings
+  validation:
+    check_missing_columns: true
+    check_data_types: true
+    min_rows_required: 1
+    min_features_required: 1
+
+  # Output settings
+  output:
+    index: false  # Don't save row indices
+    compression: null  # No compression for parquet
+
+# Logging settings
+logging:
+  log_data_shape: true
+  log_column_info: true
+  log_label_distribution: true
+  log_processing_stats: true
