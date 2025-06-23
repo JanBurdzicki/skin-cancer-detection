@@ -1,0 +1,5 @@
+outs:
+- md5: d493b604ee400faac6bc72f6a7623a7f
+  size: 25486862
+  hash: md5
+  path: augmentation_metadata.json

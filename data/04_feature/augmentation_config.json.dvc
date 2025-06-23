@@ -1,0 +1,5 @@
+outs:
+- md5: 952d229b1efff230c35d876b51d5efd9
+  size: 448
+  hash: md5
+  path: augmentation_config.json
