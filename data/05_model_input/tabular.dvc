@@ -1,0 +1,6 @@
+outs:
+- md5: 54e8b5b5cfabb9ad17423d6faea5d240.dir
+  size: 609817
+  nfiles: 3
+  hash: md5
+  path: tabular
