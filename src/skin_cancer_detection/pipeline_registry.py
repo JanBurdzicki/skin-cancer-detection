@@ -15,6 +15,7 @@ from skin_cancer_detection.pipelines import (
     image_augmentation,
     feature_extraction,
     data_splitting,
+    ml_pipeline,
 )
 
 
@@ -24,6 +25,7 @@ def register_pipelines() -> dict[str, Pipeline]:
     Returns:
         A mapping from pipeline names to ``Pipeline`` objects.
     """
+    # Individual component pipelines
     data_restructuring_pipeline = data_restructuring.create_pipeline()
     csv_label_fixing_pipeline = csv_label_fixing.create_pipeline()
     csv_to_parquet_pipeline = csv_to_parquet.create_pipeline()
@@ -36,7 +38,11 @@ def register_pipelines() -> dict[str, Pipeline]:
     feature_extraction_pipeline = feature_extraction.create_pipeline()
     data_splitting_pipeline = data_splitting.create_pipeline()
 
+    # Comprehensive ML pipeline with training, optimization, validation, and XAI
+    comprehensive_ml_pipeline = ml_pipeline.create_ml_pipeline()
+
     return {
+        # Individual component pipelines
         "data_restructuring": data_restructuring_pipeline,
         "csv_label_fixing": csv_label_fixing_pipeline,
         "csv_to_parquet": csv_to_parquet_pipeline,
@@ -48,7 +54,13 @@ def register_pipelines() -> dict[str, Pipeline]:
         "image_augmentation": image_augmentation_pipeline,
         "feature_extraction": feature_extraction_pipeline,
         "data_splitting": data_splitting_pipeline,
-        "__default__": data_restructuring_pipeline
+
+        # Comprehensive ML pipeline (default)
+        "__default__": comprehensive_ml_pipeline,
+        "ml_pipeline": comprehensive_ml_pipeline,
+
+        # Legacy data processing pipeline
+        "data_processing": data_restructuring_pipeline
         + csv_label_fixing_pipeline
         + csv_to_parquet_pipeline
         + data_cleanup_pipeline
